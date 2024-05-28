@@ -1,0 +1,24 @@
+include? ".slm/stanza.proj"
+pkg-cache: ".slm/pkg-cache"
+
+package libzip defined-in "src/libzip.stanza"
+packages libzip/* defined-in "src/libzip"
+
+include "stanza-libzip.proj"
+
+; This include file will only exist in the git repo at binary package build time.
+; End-user slm packages will not have this include file.
+include? "stanza-library.proj"
+
+build main :
+  inputs:
+    libzip
+  pkg: ".slm/pkgs"
+  s: "main.s"
+  o: "main"
+
+build-test test :
+  inputs:
+    libzip/tests
+  pkg: ".slm/test-pkgs"
+  o: "libzip-test"

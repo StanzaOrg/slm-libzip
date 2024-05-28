@@ -1,0 +1,18 @@
+
+#use-added-syntax(tests)
+defpackage libzip/tests :
+  import core
+
+  import libzip
+
+deftest test-basic-init :
+  #EXPECT(true)
+  ; val a = libzip_read_new()
+  ; try:
+  ;   val sf = libzip_error_string(a)
+  ;   #EXPECT(sf == false)
+  ; finally:
+  ;   libzip_read_close(a)
+  ;   libzip_read_free(a)
+
+
