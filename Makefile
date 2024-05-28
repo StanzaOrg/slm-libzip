@@ -29,8 +29,7 @@ build:
 	export CONAN_HOME="${CONAN_HOME}"  # copy from make env to bash env
 	${CONAN} config install conan-config
 	 #${CONAN} remote enable conancenter
-	[ ! -e ".conan2/profiles/default" ] && ${CONAN} profile detect
-	(cd conan_lbstanza_generator && ${CONAN} create .)
+	(cd conan_lbstanza_generator && ${CONAN} create -pr:b ${CONAN_BUILD_PROFILE} -pr:h ${CONAN_HOST_PROFILE} .)
 
 	 # get the current project name from the slm.toml file
 	SLMPROJNAME=$$(${SED} -n -e '/^ *name *= *"*\([^"]*\).*/{s//\1/;p;q}' slm.toml)
