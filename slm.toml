@@ -46,7 +46,7 @@ options.macos.fPIC = "True"
 
 [dependencies.openssl]
 pkg="openssl"
-version="3.2.1"
+version="3.2.2"
 type="conan"
 options.shared = "False"
 options.386 = "False"
