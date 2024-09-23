@@ -1,6 +1,6 @@
 
 name = "slm-libzip"
-version = "0.0.2"
+version = "0.0.3"
 
 [dependencies.libzip]
 pkg="libzip"
