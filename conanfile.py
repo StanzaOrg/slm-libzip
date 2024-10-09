@@ -20,14 +20,14 @@ required_conan_version = ">=2.0"
 
 class ConanSlmPackage(ConanFile):
   package_type = "library"
-  python_requires = "lbstanzagenerator_pyreq/[>=0.1]"
+  python_requires = "lbstanzagenerator_pyreq/[>=0.6.17 <0.7.0]"
 
   # Binary configuration
   #settings = "os", "arch", "compiler", "build_type"
   settings = "os", "arch"
 
   options = {"shared": [True, False], "fPIC": [True, False]}
-  default_options = {"shared": True, "fPIC": True}
+  default_options = {"shared": True, "fPIC": True, "*/*:shared": True}
   implements = ["auto_shared_fpic"]
 
 
@@ -86,9 +86,6 @@ class ConanSlmPackage(ConanFile):
           # get its name and set any options
           pkgname = d["pkg"]
 
-          # default to shared=true for each dependency, allow overrides
-          self.options[pkgname]._set("shared","True")
-
           if "options" in d.keys():
             opts = d["options"]
             for k, v in opts.items():
@@ -126,12 +123,12 @@ class ConanSlmPackage(ConanFile):
     self.output.info("conanfile.py: build_requirements()")
   
     # use stanza provided by conan
-    self.tool_requires("lbstanza/[>=0.18.58]")
-    self.tool_requires("slm/[>=0.6.7]")
+    self.tool_requires("lbstanza/[>=0.18.94 <0.19.0]")
+    self.tool_requires("slm/[>=0.6.17 <0.7.0]")
     
     # use cmake and ninja provided by conan
     # necessary if compiling non-stanza dependencies
-    self.tool_requires("cmake/[>3.20]")
+    self.tool_requires("cmake/[>=3.27 <4.0]")
     self.tool_requires("ninja/[>1.11]")
   
     # use mingw-builds compiler provided by conan on windows
@@ -165,15 +162,15 @@ class ConanSlmPackage(ConanFile):
       self.run(f"stanza build {t} -o {d}/{t} -verbose", cwd=self.source_folder, scope="build")
       update_path_cmd=""
       if platform.system()=="Darwin":
-        # on macos, find all dylib files in the current directory recursively, and add their directories to the DYLD_LIBRARY_PATH so that the dylib files can be located at runtime
-        # get a unique set of directories that contain dylibs under the current directory
+        # on macos, find all dlls in the current directory recursively, and add their directories to the DYLD_LIBRARY_PATH so that the dlls can be located at runtime
+        # get a unique set of directories that contain dlls under the current directory
         dylib_dirs = {p.resolve().parents[0].as_posix() for p in sorted(Path('.').glob('**/*.dylib'))}
         path_str = ':'.join(dylib_dirs)
         if path_str:
           update_path_cmd=f"export DYLD_LIBRARY_PATH={path_str}:$DYLD_LIBRARY_PATH ; "
       elif platform.system()=="Windows":
         t="test.exe"
-        # on windows, find all dll files in the current directory recursively, and add their directories to the PATH so that the dll files can be located at runtime
+        # on windows, find all dlls in the current directory recursively, and add their directories to the PATH so that the dlls can be located at runtime
         # get a unique set of directories that contain dlls under the current directory
         dll_win_dirs = {p.resolve().parents[0].as_posix() for p in sorted(Path('.').glob('**/*.dll'))}
         # convert those windows-style paths to bash-style paths
@@ -182,13 +179,6 @@ class ConanSlmPackage(ConanFile):
         path_str = ':'.join(dll_bash_dirs)
         if path_str:
           update_path_cmd=f"export PATH={path_str}:$PATH ; "
-      else:
-        # on linux, find all so files in the current directory recursively, and add their directories to the DYLD_LIBRARY_PATH so that the  can be located at runtime
-        # get a unique set of directories that contain so files under the current directory
-        so_dirs = {p.resolve().parents[0].as_posix() for p in sorted(Path('.').glob('**/*.so.*'))}  # .so files may have a version extension like ".so.5"
-        path_str = ':'.join(so_dirs)
-        if path_str:
-          update_path_cmd=f"export LD_LIBRARY_PATH={path_str}:$LD_LIBRARY_PATH ; "
       self.run(f"bash -c '{update_path_cmd} {d}/{t}'",
                cwd=self.source_folder, scope="build")
 
